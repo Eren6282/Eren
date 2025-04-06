@@ -4,7 +4,7 @@
     YouTube kanalıma bakmak isterseniz aşağıdaki butona tıklayabilirsiniz.
   </h1>
 
-  <button class="button" onclick="window.location.href='https://youtu.be/r11mz5jvHaU?si=J1lfP4706qOBxclY'">
+  <button class="button" onclip 'https://youtu.be/r11mz5jvHaU?si=J1lfP4706qOBxclY">
     youtube kanalım
   </button>
 </body>
