@@ -4,13 +4,6 @@ Merhaba bu benim resmi deneme sitem
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Benim Sitem</title>
-  <style>
-    body {
-      background-color: #14096a;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
       padding-top: 100px;
     }
     h1 {
