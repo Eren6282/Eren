@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Flappy Bird Mini</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #70c5ce; }
+    canvas { background: #fff; border: 2px solid #000; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="320" height="480"></canvas>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    let bird = { x: 50, y: 150, width: 20, height: 20, gravity: 1.5, lift: -15, velocity: 0 };
+    let pipes = [];
+    let score = 0;
+    let gameOver = false;
+
+    document.addEventListener("keydown", flap);
+    document.addEventListener("click", flap); // mobil uyumu
+
+    function flap() {
+      bird.velocity = bird.lift;
+    }
+
+    function drawBird() {
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+    }
+
+    function drawPipes() {
+      for (let i = 0; i < pipes.length; i++) {
+        let p = pipes[i];
+        ctx.fillStyle = "green";
+        ctx.fillRect(p.x, 0, p.width, p.top);
+        ctx.fillRect(p.x, p.bottom, p.width, canvas.height - p.bottom);
+        p.x -= 2;
+
+        // çarpışma
+        if (
+          bird.x < p.x + p.width &&
+          bird.x + bird.width > p.x &&
+          (bird.y < p.top || bird.y + bird.height > p.bottom)
+        ) {
+          gameOver = true;
+        }
+
+        // skor
+        if (p.x + p.width === bird.x) score++;
+      }
+
+      if (pipes.length > 0 && pipes[0].x < -pipes[0].width) {
+        pipes.shift();
+      }
+    }
+
+    function newPipe() {
+      let top = Math.random() * 200 + 20;
+      let gap = 100;
+      pipes.push({
+        x: canvas.width,
+        width: 40,
+        top: top,
+        bottom: top + gap
+      });
+    }
+
+    function update() {
+      if (gameOver) {
+        alert("Oyun Bitti! Skor: " + score);
+        location.reload();
+        return;
+      }
+
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y > canvas.height || bird.y < 0) {
+        gameOver = true;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBird();
+      drawPipes();
+
+      ctx.fillStyle = "black";
+      ctx.font = "20px sans-serif";
+      ctx.fillText("Skor: " + score, 10, 30);
+    }
+
+    setInterval(update, 20);
+    setInterval(newPipe, 2000); // 2 saniyede bir boru
+  </script>
+</body>
+</html>
