@@ -1,100 +1,127 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Flappy Bird Mini</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #70c5ce; }
-    canvas { background: #fff; border: 2px solid #000; }
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #70c5ce;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      background-color: #70c5ce;
+    }
   </style>
 </head>
 <body>
-  <canvas id="game" width="320" height="480"></canvas>
-
+  <canvas id="gameCanvas" width="320" height="480"></canvas>
   <script>
-    const canvas = document.getElementById("game");
+    const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let bird = { x: 50, y: 150, width: 20, height: 20, gravity: 1.5, lift: -15, velocity: 0 };
-    let pipes = [];
+    // Oyun değişkenleri
+    let birdX = 50;
+    let birdY = 150;
+    let birdSpeed = 0;
+    const gravity = 0.5;
+    let isGameRunning = true;
+
+    // Borular
+    const pipes = [];
+    const pipeWidth = 50;
+    const pipeGap = 120;
+    const pipeSpeed = 2;
+
+    // Skor
     let score = 0;
-    let gameOver = false;
 
-    document.addEventListener("keydown", flap);
-    document.addEventListener("click", flap); // mobil uyumu
-
-    function flap() {
-      bird.velocity = bird.lift;
-    }
-
-    function drawBird() {
-      ctx.fillStyle = "yellow";
-      ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
-    }
-
-    function drawPipes() {
-      for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-        ctx.fillStyle = "green";
-        ctx.fillRect(p.x, 0, p.width, p.top);
-        ctx.fillRect(p.x, p.bottom, p.width, canvas.height - p.bottom);
-        p.x -= 2;
-
-        // çarpışma
-        if (
-          bird.x < p.x + p.width &&
-          bird.x + bird.width > p.x &&
-          (bird.y < p.top || bird.y + bird.height > p.bottom)
-        ) {
-          gameOver = true;
-        }
-
-        // skor
-        if (p.x + p.width === bird.x) score++;
-      }
-
-      if (pipes.length > 0 && pipes[0].x < -pipes[0].width) {
-        pipes.shift();
-      }
-    }
-
-    function newPipe() {
-      let top = Math.random() * 200 + 20;
-      let gap = 100;
+    // Boru ekleme
+    function addPipe() {
+      const topHeight = Math.random() * (canvas.height / 2);
       pipes.push({
         x: canvas.width,
-        width: 40,
-        top: top,
-        bottom: top + gap
+        topHeight: topHeight,
+        bottomHeight: canvas.height - topHeight - pipeGap,
       });
     }
 
-    function update() {
-      if (gameOver) {
-        alert("Oyun Bitti! Skor: " + score);
-        location.reload();
+    // Oyun döngüsü
+    function gameLoop() {
+      if (!isGameRunning) {
+        alert(`Oyun Bitti! Skorunuz: ${score}`);
+        document.location.reload();
         return;
       }
 
-      bird.velocity += bird.gravity;
-      bird.y += bird.velocity;
+      // Canvas temizle
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (bird.y > canvas.height || bird.y < 0) {
-        gameOver = true;
+      // Kuş
+      birdSpeed += gravity;
+      birdY += birdSpeed;
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(birdX, birdY, 20, 20);
+
+      // Borular
+      for (let i = 0; i < pipes.length; i++) {
+        const pipe = pipes[i];
+        pipe.x -= pipeSpeed;
+
+        // Boruları çiz
+        ctx.fillStyle = "green";
+        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+        ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight, pipeWidth, pipe.bottomHeight);
+
+        // Çarpışma kontrolü
+        if (
+          birdX + 20 > pipe.x &&
+          birdX < pipe.x + pipeWidth &&
+          (birdY < pipe.topHeight || birdY + 20 > canvas.height - pipe.bottomHeight)
+        ) {
+          isGameRunning = false;
+        }
+
+        // Boruları ekrandan çıkar
+        if (pipe.x + pipeWidth < 0) {
+          pipes.splice(i, 1);
+          score++;
+          i--;
+        }
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawBird();
-      drawPipes();
+      // Zemine çarpma kontrolü
+      if (birdY + 20 > canvas.height) {
+        isGameRunning = false;
+      }
 
-      ctx.fillStyle = "black";
-      ctx.font = "20px sans-serif";
-      ctx.fillText("Skor: " + score, 10, 30);
+      // Yeni boru ekle
+      if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
+        addPipe();
+      }
+
+      // Skoru göster
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText(`Skor: ${score}`, 10, 30);
+
+      requestAnimationFrame(gameLoop);
     }
 
-    setInterval(update, 20);
-    setInterval(newPipe, 2000); // 2 saniyede bir boru
+    // Kuş kontrolü
+    window.addEventListener("keydown", () => {
+      birdSpeed = -8;
+    });
+
+    // Oyunu başlat
+    addPipe();
+    gameLoop();
   </script>
 </body>
 </html>
